@@ -13,19 +13,14 @@
 using namespace std;
 
 bool paused = false;
-int g = 60;
-int counter = -1;
-
-const int a = 1;
+const int g = 1;
 int speed = 0;
-
-
 int t = 0;
 bool down = true;
 int floor1 = 400;
 int h = 340;
-double Ep = g * h;
 int top = floor1 - h;
+
 HINSTANCE hInst;
 
 namespace Color
@@ -99,13 +94,13 @@ EmptyDialogTemplate =
 
 void CheckDown()
 {
-	if(top + a * (t + 1) * (t + 1 ) / 2  > floor1 - 40)
+	if(top + g * (t + 1) * (t + 1 ) / 2  > floor1 - 40)
 	{
 		top = floor1 - 40;
 		t = 0;
 		down = false;
 	}
-	if (top + a * (t + 1) * (t + 1) / 2 - speed * (t + 1) < floor1 - h && !down)
+	if (top + g * (t + 1) * (t + 1) / 2 - speed * (t + 1) < floor1 - h && !down)
 	{
 		speed = 0;
 		top = floor1 - h;
@@ -123,6 +118,8 @@ int GetNewHeight(HWND hWnd)
 	int result = wcstod(buffer, NULL);
 	return result;
 }
+
+
 
 INT_PTR CALLBACK DlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 	LPARAM lParam)
@@ -182,16 +179,12 @@ class Application
 	static const int MinDialogHeight = 250;
 
 	static const int Timer1ID = 1;
-	static const int Timer5ID = 2;
 
 	static const int Timer1Interval = 17;
-	static const int Timer15Interval = 6000;
 
 	static const int Timer1MaxValue = 1;
-	static const int Timer2MaxValue = 3;
-
+	
 	static int _timer1Ticks;
-	static int _timer2Ticks;
 
 public:
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -263,13 +256,29 @@ private:
 	static void OnCreate(HWND hWnd)
 	{
 		SetTimer(hWnd, Timer1ID, Timer1Interval, nullptr);
-		SetTimer(hWnd, Timer5ID, Timer15Interval, TimerProc);
 	}
 
 	static void OnGetMinMaxInfo(LPMINMAXINFO minMaxInfo)
 	{
 		minMaxInfo->ptMinTrackSize.x = MinDialogWidth;
 		minMaxInfo->ptMinTrackSize.y = MinDialogHeight;
+	}
+
+	static void CalculatePosition()
+	{
+		if (_timer1Ticks == 0 && !paused)
+		{
+			t++;
+			if (down)
+			{
+				top += g * t * t / 2;
+				speed = g * t;
+			}
+			if (!down)
+			{
+				top = top + g * t * t / 2 - speed * t;
+			}
+		}
 	}
 
 	static void OnTimer1(HWND hWnd, int timerID)
@@ -287,23 +296,6 @@ private:
 	}
 
 
-
-
-	static void CALLBACK TimerProc(HWND hWnd, UINT message, UINT_PTR idEvent, DWORD time)
-	{
-		if (idEvent != Timer5ID) return;
-		if (!paused)
-			++_timer2Ticks;
-
-
-		if (_timer2Ticks > Timer2MaxValue)
-		{
-			_timer2Ticks = 0;
-		}
-
-		InvalidateRect(hWnd, nullptr, true);
-	}
-
 	static void OnPaint(HWND hWnd, HDC hdc)
 	{
 
@@ -311,21 +303,8 @@ private:
 		auto width = (clientRect.right - clientRect.left) / 2;
 		auto height = (clientRect.bottom - clientRect.top) / 2;
 		
-		auto scale = 100;
 		CheckDown();
-		if (_timer1Ticks == 0 && !paused)
-		{
-			t++;
-			if (down)
-			{
-				top += a * t * t / 2;
-				speed = a * t;
-			}
-			if (!down)		
-			{
-				top = top + a * t * t / 2 - speed * t;
-			}
-		}
+		CalculatePosition();
 		
 		SelectObject(hdc, CreateSolidBrush(Color::SteelBlue2));
 		Rectangle(hdc, width - 200, floor1, width + 200,floor1 + 50);
@@ -338,11 +317,6 @@ private:
 		SelectObject(hdc, pen2);
 		LineTo(hdc, width, floor1);
 
-		
-
-		
-
-		
 	}
 
 
@@ -352,44 +326,6 @@ private:
 		::GetClientRect(hWnd, &rect);
 		return rect;
 	}
-
-	static void DrawLines(HDC hdc, long width, long height)
-	{
-		auto defaultPen = SelectObject(hdc, CreatePen(PS_DASHDOTDOT, 1, Color::SteelBlue2));
-
-		MoveToEx(hdc, 0, height / 2, nullptr);
-		LineTo(hdc, width, height / 2);
-
-		MoveToEx(hdc, width / 2, 0, nullptr);
-		LineTo(hdc, width / 2, height);
-
-		SelectObjectAndDeletePrevious(hdc, defaultPen);
-	}
-
-	static void DrawRectangle(HDC hdc, long width, long height, long scale)
-	{
-		auto rectangleColor = (_timer2Ticks != 0) ? Color::Firebrick : Color::Sienna1;
-		auto defaultBrush = SelectObject(hdc, CreateSolidBrush(rectangleColor));
-		auto defaultPen = SelectObject(hdc, CreatePen(PS_SOLID, 2, Color::Black));
-
-		DrawRectangle(hdc, CalculateShapeRect(width / 4, height / 4, 0.85 * scale, 0.95 * scale));
-
-		SelectObjectAndDeletePrevious(hdc, defaultBrush);
-		SelectObjectAndDeletePrevious(hdc, defaultPen);
-	}
-
-	static void DrawEllipse(HDC hdc, long width, long height, long scale, int r, int g, int b)
-	{
-		auto defaultBrush = SelectObject(hdc, CreateSolidBrush(RGB(r, g, b)));
-
-		DrawEllipse(hdc, CalculateShapeRect(width, height, 0.95 * scale, 0.85 * scale));
-
-		SelectObjectAndDeletePrevious(hdc, defaultBrush);
-	}
-
-	
-
-	
 
 	static HFONT CreateFont(std::wstring name, int size, int weight)
 	{
@@ -401,37 +337,15 @@ private:
 		return CreateFontIndirect(&lf);
 	}
 
-
-	
-
-	static RECT CalculateShapeRect(int xCenter, int yCenter, double width, double heigth)
-	{
-		auto x = xCenter - (int)width / 2;
-		auto y = yCenter - (int)heigth / 2;
-		return RECT{ x, y, x + (int)width, y + (int)heigth };
-	}
-
 	static void SelectObjectAndDeletePrevious(HDC hDeviceContext, HGDIOBJ gdiObject)
 	{
 		auto previousGdiObject = SelectObject(hDeviceContext, gdiObject);
 		DeleteObject(previousGdiObject);
 	}
 
-	static void DrawRectangle(HDC hDeviceContext, RECT rect)
-	{
-		Rectangle(hDeviceContext, rect.left, rect.top, rect.right, rect.bottom);
-	}
-
-
-
-	static void DrawEllipse(HDC hDeviceContext, RECT rect)
-	{
-		Ellipse(hDeviceContext, rect.left, rect.top, rect.right, rect.bottom);
-	}
 };
 
 int Application::_timer1Ticks = 0;
-int Application::_timer2Ticks = 0;
 
 int APIENTRY wWinMain(
 	_In_ HINSTANCE hInstance,
