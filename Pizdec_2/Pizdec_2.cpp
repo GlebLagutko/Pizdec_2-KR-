@@ -156,7 +156,14 @@ INT_PTR CALLBACK DlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 			auto TextA = GetDlgItem(hwndDlg, Control::IDC_TestTextBoxA);
 			if (GetWindowTextLengthW(TextA) != 0)
 				if (GetNewHeight(TextA) > 40)
+				{
 					h = GetNewHeight(TextA);
+					top = floor1 - h;
+					if (paused)
+						paused = !paused;
+				}
+				else
+					MessageBoxA(hwndDlg, "Error!!! Wrong Height", NULL, MB_OK);
 
 			EndDialog(hwndDlg, IDCANCEL);
 		}
