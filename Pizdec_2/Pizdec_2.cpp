@@ -16,7 +16,7 @@ bool paused = false;
 int g = 60;
 int counter = -1;
 
-const int a = 2;
+const int a = 1;
 int speed = 0;
 
 
