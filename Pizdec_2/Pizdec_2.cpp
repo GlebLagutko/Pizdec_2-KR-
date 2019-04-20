@@ -135,9 +135,6 @@ INT_PTR CALLBACK DlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 			WS_CHILD | WS_VISIBLE, 100, 10, 60,
 			20, hwndDlg, (HMENU)Control::IDC_TestTextBoxA, nullptr, nullptr);
 
-		
-
-
 		CreateWindowEx(WS_EX_CLIENTEDGE, TEXT("Button"), TEXT("Ok"),
 			WS_CHILD | WS_VISIBLE, 100, 40, 30,
 			20, hwndDlg, (HMENU)Control::IDC_TestButtonOk, NULL, NULL);
@@ -150,9 +147,9 @@ INT_PTR CALLBACK DlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 	}
 	case WM_COMMAND:
 	{
+
 		if (wParam == Control::IDC_TestButtonOk)
 		{
-			
 			auto TextA = GetDlgItem(hwndDlg, Control::IDC_TestTextBoxA);
 			if (GetWindowTextLengthW(TextA) != 0)
 				if (GetNewHeight(TextA) > 40)
@@ -167,8 +164,12 @@ INT_PTR CALLBACK DlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 			EndDialog(hwndDlg, IDCANCEL);
 		}
-		if (wParam == Control::IDC_TestButtonCancel)
-			EndDialog(hwndDlg, IDCANCEL);
+		else
+		{
+			if (wParam == Control::IDC_TestButtonCancel)
+				EndDialog(hwndDlg, IDCANCEL);
+		}
+
 	}
 	break;
 	case WM_CLOSE:
@@ -218,17 +219,22 @@ public:
 
 		case WM_KEYDOWN:
 		{
-			
-			if (wParam == VK_F5)
+			switch (wParam)
+			{
+			case VK_F5:
 			{
 				top = floor1 - h;
 			}
-		    if(wParam == VK_SPACE)
-		    {
-				paused = !paused;
-		    }
 			break;
+			case VK_SPACE :
+			{
+				paused = !paused;
+			}
+			break;
+			}
+
 		}
+		break;
 
 		case WM_RBUTTONDOWN :
 		{
@@ -249,8 +255,6 @@ public:
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			break;
-
-
 
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
@@ -365,7 +369,7 @@ int APIENTRY wWinMain(
 
 	auto winApiModule = WinApiModule(
 		L"9_Timer_and_Drawing",
-		L"9. ?????? ? ?????????",
+		L"KR.WinApi",
 		hInstance,
 		Application::WndProc);
 

@@ -39,7 +39,7 @@ private:
 
 		windowClass.cbSize = sizeof(WNDCLASSEX);
 
-		windowClass.style = CS_HREDRAW | CS_VREDRAW;
+		windowClass.style = CS_HREDRAW | CS_VREDRAW ;
 		windowClass.lpfnWndProc = _wndProc;
 		windowClass.cbClsExtra = 0;
 		windowClass.cbWndExtra = 0;
